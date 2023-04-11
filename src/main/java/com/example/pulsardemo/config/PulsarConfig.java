@@ -1,14 +1,15 @@
 package com.example.pulsardemo.config;
 
+import com.example.pulsardemo.model.PersonInfo;
 import org.apache.pulsar.client.api.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PulsarConfig {
-    private static final String TOPIC = "test-topic";
+    private static final String TOPIC = "json-topic";
 
-    private static final String SCRIBE = "test-subscription";
+    private static final String SCRIBE = "json-subscription";
 
     @Bean
     public PulsarClient pulsarClient() throws PulsarClientException {
@@ -18,12 +19,12 @@ public class PulsarConfig {
     }
 
     @Bean
-    public Producer<String> stringProducer(PulsarClient client) throws PulsarClientException {
-        return client.newProducer(Schema.STRING).topic(TOPIC).create();
+    public Producer<PersonInfo> producer(PulsarClient client) throws PulsarClientException {
+        return client.newProducer(Schema.JSON(PersonInfo.class)).topic(TOPIC).create();
     }
 
     @Bean
-    public Consumer<String> consumer(PulsarClient client) throws PulsarClientException {
-        return client.newConsumer(Schema.STRING).topic(TOPIC).subscriptionName(SCRIBE).subscribe();
+    public Consumer<PersonInfo> consumer(PulsarClient client) throws PulsarClientException {
+        return client.newConsumer(Schema.JSON(PersonInfo.class)).topic(TOPIC).subscriptionName(SCRIBE).subscribe();
     }
 }

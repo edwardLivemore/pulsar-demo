@@ -1,6 +1,8 @@
 package com.example.pulsardemo.service.impl;
 
 
+import com.alibaba.fastjson.JSONObject;
+import com.example.pulsardemo.model.PersonInfo;
 import com.example.pulsardemo.service.ConsumerService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.Consumer;
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ConsumerServiceImpl implements ConsumerService {
     @Autowired
-    private Consumer<String> consumer;
+    private Consumer<PersonInfo> consumer;
 
     @Override
     public void consume() throws PulsarClientException {
@@ -23,7 +25,8 @@ public class ConsumerServiceImpl implements ConsumerService {
 
             try {
                 // Do something with the message
-                log.info("Message received: " + new String(msg.getData()));
+                PersonInfo info = JSONObject.parseObject(new String(msg.getData()), PersonInfo.class);
+                log.info("Message received: " + info);
 
                 // Acknowledge the message so that it can be deleted by the message broker
                 consumer.acknowledge(msg);
