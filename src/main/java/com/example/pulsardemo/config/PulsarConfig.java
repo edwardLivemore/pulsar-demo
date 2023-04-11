@@ -20,11 +20,18 @@ public class PulsarConfig {
 
     @Bean
     public Producer<PersonInfo> producer(PulsarClient client) throws PulsarClientException {
-        return client.newProducer(Schema.JSON(PersonInfo.class)).topic(TOPIC).create();
+        return client.newProducer(Schema.JSON(PersonInfo.class))
+                .topic(TOPIC)
+                .accessMode(ProducerAccessMode.Shared)
+                .create();
     }
 
     @Bean
     public Consumer<PersonInfo> consumer(PulsarClient client) throws PulsarClientException {
-        return client.newConsumer(Schema.JSON(PersonInfo.class)).topic(TOPIC).subscriptionName(SCRIBE).subscribe();
+        return client.newConsumer(Schema.JSON(PersonInfo.class))
+                .topic(TOPIC)
+                .subscriptionName(SCRIBE)
+                .subscriptionType(SubscriptionType.Failover)
+                .subscribe();
     }
 }
