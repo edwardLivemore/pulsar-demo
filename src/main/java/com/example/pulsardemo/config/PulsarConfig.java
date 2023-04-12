@@ -2,6 +2,7 @@ package com.example.pulsardemo.config;
 
 import com.example.pulsardemo.model.PersonInfo;
 import org.apache.pulsar.client.api.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,6 +11,10 @@ public class PulsarConfig {
     private static final String TOPIC = "json-topic";
 
     private static final String SCRIBE = "json-subscription";
+
+    @Value("${pulsar.url:}")
+    private String pulsarUrl;
+
 
     @Bean
     public PulsarClient pulsarClient() throws PulsarClientException {
