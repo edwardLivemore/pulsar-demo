@@ -19,7 +19,7 @@ public class PulsarConfig {
     @Bean
     public PulsarClient pulsarClient() throws PulsarClientException {
         return PulsarClient.builder()
-                .serviceUrl("pulsar://10.101.12.23:6650")
+                .serviceUrl(pulsarUrl)
                 .build();
     }
 
