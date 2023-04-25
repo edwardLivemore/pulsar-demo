@@ -2,4 +2,4 @@ server:
   port: 9898
 
 pulsar:
-  url: pulsar://10.101.12.23:6650
+  url: pulsar://10.101.12.225:6650

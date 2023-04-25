@@ -8,9 +8,9 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PulsarConfig {
-    private static final String TOPIC = "json-topic";
+    private static final String TOPIC = "test-topic";
 
-    private static final String SCRIBE = "json-subscription";
+    private static final String SCRIBE = "test-subscription";
 
     @Value("${pulsar.url:}")
     private String pulsarUrl;
