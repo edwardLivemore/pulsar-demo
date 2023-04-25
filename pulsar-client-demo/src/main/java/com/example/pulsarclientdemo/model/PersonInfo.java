@@ -1,4 +1,4 @@
-package com.example.pulsardemo.model;
+package com.example.pulsarclientdemo.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

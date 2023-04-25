@@ -1,7 +1,7 @@
-package com.example.pulsardemo.service.impl;
+package com.example.pulsarclientdemo.service.impl;
 
-import com.example.pulsardemo.model.PersonInfo;
-import com.example.pulsardemo.service.PulsarService;
+import com.example.pulsarclientdemo.model.PersonInfo;
+import com.example.pulsarclientdemo.service.PulsarService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClientException;

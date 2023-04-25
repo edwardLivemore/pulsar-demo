@@ -1,6 +1,7 @@
-package com.example.pulsardemo.config;
+package com.example.pulsarclientdemo.config;
 
-import com.example.pulsardemo.model.PersonInfo;
+import com.example.pulsarclientdemo.model.PersonInfo;
+import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.api.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,9 +13,8 @@ public class PulsarConfig {
 
     private static final String SCRIBE = "test-subscription";
 
-    @Value("${pulsar.url:}")
+    @Value("${pulsar.service.url:}")
     private String pulsarUrl;
-
 
     @Bean
     public PulsarClient pulsarClient() throws PulsarClientException {

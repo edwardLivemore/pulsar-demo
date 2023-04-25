@@ -1,4 +1,4 @@
-package com.example.pulsardemo.service;
+package com.example.pulsarclientdemo.service;
 
 import org.apache.pulsar.client.api.PulsarClientException;
 

@@ -1,9 +1,9 @@
-package com.example.pulsardemo.service.impl;
+package com.example.pulsarclientdemo.service.impl;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.example.pulsardemo.model.PersonInfo;
-import com.example.pulsardemo.service.ConsumerService;
+import com.example.pulsarclientdemo.model.PersonInfo;
+import com.example.pulsarclientdemo.service.ConsumerService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Message;
