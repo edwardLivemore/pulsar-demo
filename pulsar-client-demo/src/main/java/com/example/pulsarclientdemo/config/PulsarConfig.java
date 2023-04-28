@@ -1,7 +1,6 @@
 package com.example.pulsarclientdemo.config;
 
 import com.example.pulsarclientdemo.model.PersonInfo;
-import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.api.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +19,7 @@ public class PulsarConfig {
     public PulsarClient pulsarClient() throws PulsarClientException {
         return PulsarClient.builder()
                 .serviceUrl(pulsarUrl)
+                .authentication(AuthenticationFactory.token("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGluYWRlcFJvbGVBIn0.Xk7uGGZ5KKDJ_kN0_kKSl7lHa_3LM8fqb-ijechkA1w"))
                 .build();
     }
 

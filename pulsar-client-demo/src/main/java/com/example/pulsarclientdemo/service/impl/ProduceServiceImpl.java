@@ -1,7 +1,7 @@
 package com.example.pulsarclientdemo.service.impl;
 
 import com.example.pulsarclientdemo.model.PersonInfo;
-import com.example.pulsarclientdemo.service.PulsarService;
+import com.example.pulsarclientdemo.service.ProduceService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClientException;
@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class PulsarServiceImpl implements PulsarService {
+public class ProduceServiceImpl implements ProduceService {
     @Autowired
     private Producer<PersonInfo> producer;
 
     @Override
-    public void test() throws PulsarClientException {
+    public void produce() throws PulsarClientException {
         log.info("test pulsar");
 
         // 生产消息

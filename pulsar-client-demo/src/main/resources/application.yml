@@ -3,6 +3,6 @@ server:
 
 pulsar:
   admin:
-    url:
+    url: http://10.101.12.225:8080
   service:
     url: pulsar://10.101.12.225:6650

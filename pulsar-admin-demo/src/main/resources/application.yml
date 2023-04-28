@@ -1,0 +1,14 @@
+server:
+  port: 9897
+
+pulsar:
+  admin:
+    url: http://10.101.12.225:8080
+  service:
+    url: pulsar://10.101.12.225:6650
+  cluster: cluster-a
+  tenant1:
+    name: chinadep
+    namespace: chinadep/test
+    topic: persistent://chinadep/test/common
+

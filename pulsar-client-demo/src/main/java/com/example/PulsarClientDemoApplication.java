@@ -1,7 +1,7 @@
 package com.example;
 
 import com.example.pulsarclientdemo.service.ConsumerService;
-import com.example.pulsarclientdemo.service.PulsarService;
+import com.example.pulsarclientdemo.service.ProduceService;
 import org.apache.pulsar.client.api.PulsarClientException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -12,7 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class PulsarClientDemoApplication implements ApplicationRunner {
     @Autowired
-    private PulsarService pulsarService;
+    private ProduceService produceService;
 
     @Autowired
     private ConsumerService consumerService;
@@ -31,6 +31,6 @@ public class PulsarClientDemoApplication implements ApplicationRunner {
                 e.printStackTrace();
             }
         }).start();
-        pulsarService.test();
+        produceService.produce();
     }
 }
