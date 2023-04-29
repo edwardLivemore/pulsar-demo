@@ -74,6 +74,8 @@ public class PulsarAdminServiceImpl implements PulsarAdminService {
             for (Map.Entry<String, Set<AuthAction>> entry : permissionMap.entrySet()) {
                 log.info("permission ===> role:{}, actions: {}", entry.getKey(), entry.getValue());
             }
+
+            log.info("admin service init done");
         } catch (PulsarAdminException e) {
             e.printStackTrace();
         }

@@ -90,6 +90,8 @@ services:
       useHostNameAsBookieID: "true"
     volumes:
       - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
+      - ./conf/bookkeeper.conf:/pulsar/conf/bookkeeper.conf
+      - ./conf/broker.conf:/pulsar/conf/broker.conf
 #      - bk1-data:/pulsar/data/bookkeeper
     depends_on:
       - zk1
@@ -117,6 +119,8 @@ services:
       functionsWorkerEnabled: "false"
     volumes:
       - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
+      - ./conf/bookkeeper.conf:/pulsar/conf/bookkeeper.conf
+      - ./conf/broker.conf:/pulsar/conf/broker.conf
     depends_on:
       - zk1
       - pulsar-init
