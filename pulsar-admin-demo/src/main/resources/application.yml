@@ -12,5 +12,9 @@ pulsar:
   tenant1:
     name: user1
     namespace: user1/ns
-    topic: persistent://user1/ns/topic1
+    topic: persistent://user1/ns/topic
+  tenant2:
+    name: user2
+    namespace: user2/ns
+    topic: persistent://user2/ns/topic
 

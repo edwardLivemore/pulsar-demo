@@ -124,44 +124,48 @@ services:
       - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
       - ./conf/bookkeeper.conf:/pulsar/conf/bookkeeper.conf
       - ./conf/broker.conf:/pulsar/conf/broker.conf
+      - ./keys/secret.key:/pulsar/secret.key
     depends_on:
       - zk1
       - pulsar-init
       - bk1
-    networks:
-      pulsar:
-
-  proxy1:
-    hostname: proxy1
-    container_name: proxy1
-    restart: on-failure
-    image: apachepulsar/pulsar-all:latest
-    command: >
-      bash -c "python3 bin/apply-config-from-env.py conf/proxy.conf && \
-               python3 bin/apply-config-from-env.py conf/pulsar_env.sh && \
-               python3 bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
-               exec bin/pulsar proxy"
-    environment:
-      clusterName: cluster-a
-#      zookeeperServers: zk1:2181,zk2:2181,zk3:2181
-      zookeeperServers: zk1:2181
-#      configurationStoreServers: zk1:2181,zk2:2181,zk3:2181
-      configurationStoreServers: zk1:2181
-      webSocketServiceEnabled: "true"
-      functionWorkerWebServiceURL: http://fnc1:6750
-      JAVA_OPTS: -Xms1024m -Xmx1024m
-    volumes:
-      - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
     ports:
       - "6650:6650"
       - "8080:8080"
-    depends_on:
-      - zk1
-      - pulsar-init
-      - bk1
-      - broker1
     networks:
       pulsar:
+
+#  proxy1:
+#    hostname: proxy1
+#    container_name: proxy1
+#    restart: on-failure
+#    image: apachepulsar/pulsar-all:latest
+#    command: >
+#      bash -c "python3 bin/apply-config-from-env.py conf/proxy.conf && \
+#               python3 bin/apply-config-from-env.py conf/pulsar_env.sh && \
+#               python3 bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
+#               exec bin/pulsar proxy"
+#    environment:
+#      clusterName: cluster-a
+##      zookeeperServers: zk1:2181,zk2:2181,zk3:2181
+#      zookeeperServers: zk1:2181
+##      configurationStoreServers: zk1:2181,zk2:2181,zk3:2181
+#      configurationStoreServers: zk1:2181
+#      webSocketServiceEnabled: "true"
+#      functionWorkerWebServiceURL: http://fnc1:6750
+#      JAVA_OPTS: -Xms1024m -Xmx1024m
+#    volumes:
+#      - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
+#    ports:
+#      - "6650:6650"
+#      - "8080:8080"
+#    depends_on:
+#      - zk1
+#      - pulsar-init
+#      - bk1
+#      - broker1
+#    networks:
+#      pulsar:
 
 #  websocket1:
 #    hostname: websocket1

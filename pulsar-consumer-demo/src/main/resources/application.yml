@@ -3,8 +3,17 @@ server:
 
 pulsar:
   admin:
-#    url: http://10.101.12.225:8080
+    #    url: http://10.101.12.225:8080
     url: http://192.168.192.129:8080
   service:
-#    url: pulsar://10.101.12.225:6650
+    #    url: pulsar://10.101.12.225:6650
     url: pulsar://192.168.192.129:6650
+  cluster: cluster-a
+  tenant1:
+    name: user1
+    namespace: user1/ns
+    topic: persistent://user1/ns/topic
+  tenant2:
+    name: user2
+    namespace: user2/ns
+    topic: persistent://user2/ns/topic

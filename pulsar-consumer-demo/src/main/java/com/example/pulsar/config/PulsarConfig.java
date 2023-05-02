@@ -8,9 +8,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PulsarConfig {
-    private static final String TOPIC = "test-topic";
+    @Value("${pulsar.tenant1.topic}")
+    private String topic;
 
-    private static final String SCRIBE = "test-subscription";
+    private static final String SCRIBE = "failover";
 
     @Value("${pulsar.service.url:}")
     private String pulsarUrl;
@@ -19,14 +20,16 @@ public class PulsarConfig {
     public PulsarClient pulsarClient() throws PulsarClientException {
         return PulsarClient.builder()
                 .serviceUrl(pulsarUrl)
-                .authentication(AuthenticationFactory.token("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGluYWRlcCJ9.3R77tCfJbfMV3fAdKQrssNOW8j4auYuDUURxkFUjxxA"))
+                .authentication(AuthenticationFactory.token("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.EPWQdbkfBQO_6NsG-zYsmqZ_kF6Cfc_kslq_7LF-99M"))
+                .tlsTrustCertsFilePath(null)
+                .allowTlsInsecureConnection(false)
                 .build();
     }
 
     @Bean
     public Consumer<PersonInfo> consumer(PulsarClient client) throws PulsarClientException {
         return client.newConsumer(Schema.JSON(PersonInfo.class))
-                .topic(TOPIC)
+                .topic(topic)
                 .subscriptionName(SCRIBE)
                 .subscriptionType(SubscriptionType.Failover)
                 .subscribe();

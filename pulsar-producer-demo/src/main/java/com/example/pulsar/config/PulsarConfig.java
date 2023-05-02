@@ -9,9 +9,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PulsarConfig {
-    private static final String TOPIC = "test-topic";
-
-    private static final String SCRIBE = "test-subscription";
+    @Value("${pulsar.tenant1.topic}")
+    private String topic;
 
     @Value("${pulsar.service.url:}")
     private String pulsarUrl;
@@ -20,14 +19,16 @@ public class PulsarConfig {
     public PulsarClient pulsarClient() throws PulsarClientException {
         return PulsarClient.builder()
                 .serviceUrl(pulsarUrl)
-                .authentication(AuthenticationFactory.token("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGluYWRlcCJ9.3R77tCfJbfMV3fAdKQrssNOW8j4auYuDUURxkFUjxxA"))
+                .authentication(AuthenticationFactory.token("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMS1wcm9kdWNlciJ9.0OoVBSs5ZndG-vytuAybr5edEdD1MpXXApDP9RJJlQI"))
+                .tlsTrustCertsFilePath(null)
+                .allowTlsInsecureConnection(false)
                 .build();
     }
 
     @Bean
     public Producer<PersonInfo> producer(PulsarClient client) throws PulsarClientException {
         return client.newProducer(Schema.JSON(PersonInfo.class))
-                .topic(TOPIC)
+                .topic(topic)
                 .accessMode(ProducerAccessMode.Shared)
                 .create();
     }
