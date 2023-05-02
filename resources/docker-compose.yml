@@ -47,6 +47,7 @@ services:
     environment:
 #      ZOOKEEPER_SERVERS: zk1,zk2,zk3
       ZOOKEEPER_SERVERS: zk1
+      JAVA_OPTS: -Xms1024m -Xmx1024m
     volumes:
       - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
 #      - ./conf/zookeeper1.conf:/pulsar/conf/zookeeper1.conf
@@ -88,6 +89,7 @@ services:
       zkServers: zk1:2181
       numAddWorkerThreads: 8
       useHostNameAsBookieID: "true"
+      JAVA_OPTS: -Xms1024m -Xmx1024m
     volumes:
       - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
       - ./conf/bookkeeper.conf:/pulsar/conf/bookkeeper.conf
@@ -117,6 +119,7 @@ services:
       configurationStore: zk1:2181
       webSocketServiceEnabled: "false"
       functionsWorkerEnabled: "false"
+      JAVA_OPTS: -Xms1024m -Xmx1024m
     volumes:
       - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
       - ./conf/bookkeeper.conf:/pulsar/conf/bookkeeper.conf
@@ -146,6 +149,7 @@ services:
       configurationStoreServers: zk1:2181
       webSocketServiceEnabled: "true"
       functionWorkerWebServiceURL: http://fnc1:6750
+      JAVA_OPTS: -Xms1024m -Xmx1024m
     volumes:
       - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
     ports:

@@ -18,9 +18,10 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>pulsar-client-demo</module>
 		<module>pulsar-admin-demo</module>
-	</modules>
+        <module>pulsar-producer-demo</module>
+        <module>pulsar-consumer-demo</module>
+    </modules>
 
 	<properties>
 		<java.version>1.8</java.version>

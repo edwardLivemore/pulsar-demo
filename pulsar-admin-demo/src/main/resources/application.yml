@@ -10,7 +10,7 @@ pulsar:
     url: pulsar://192.168.192.129:6650
   cluster: cluster-a
   tenant1:
-    name: chinadep
-    namespace: chinadep/test
-    topic: persistent://chinadep/test/common
+    name: user1
+    namespace: user1/ns
+    topic: persistent://user1/ns/topic1
 

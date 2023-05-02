@@ -5,125 +5,150 @@
 ```shell
 docker pull apachepulsar/pulsar-all:latest
 ```
-### 1.2 创建pulsar目录及其子目录并授权
-目录结构如下:
+
+### 1.2 更新conf文件及scripts文件
+由于单节点部署原因，需修改bookkeeper.conf及broker.conf文件
 ```
-pulsar/
-├── compose.yml
-├── data
-│   ├── bookkeeper
-│   │   ├── journal
-│   │   │   └── current
-│   │   └── ledgers
-│   │       └── current
-│   └── zookeeper
-│       └── version-2
+bookkeeper.conf修改参数如下:
+# Whether the bookie itself can start auto-recovery service also or not
+autoRecoveryDaemonEnabled=false
 ```
-由于docker容器访问权限问题， 需创建zookeeper用户及bookkeeper用户，且设置data/bookkeeper及其子目录的用户权限为
- bookkeeper:bookkeeper, data/zookeeper及其子目录用户权限为 zookeeper:zookeeper，且这些目录的访问权限为可读可写
 ```
-edward@deptest225:~/pulsar/data$ ll
-total 16
-drwxr-xr-x 4 root       root       4096 Apr 25 13:58 ./
-drwxr-xr-x 5 edward     root       4096 Apr 26 14:20 ../
-drwxrwxrwx 4 bookkeeper bookkeeper 4096 Apr 25 14:18 bookkeeper/
-drwxr-xr-x 3 zookeeper  zookeeper  4096 Apr 25 14:54 zookeeper/
+broker.conf修改参数如下:
+# Number of bookies to use when creating a ledger
+managedLedgerDefaultEnsembleSize=1
+
+# Number of copies to store for each message
+managedLedgerDefaultWriteQuorum=1
+
+# Number of guaranteed copies (acks to wait before write is complete)
+managedLedgerDefaultAckQuorum=1
 ```
+
 ### 1.3 编写compose.yml
 ```
-version: '3'
+version: '3.4'
+
 networks:
   pulsar:
     driver: bridge
-services:
-# Start zookeeper
-  zookeeper:
-    image: apachepulsar/pulsar:latest
-    container_name: zookeeper
-    restart: on-failure
-    networks:
-      - pulsar
-    volumes:
-      - ./data/zookeeper:/pulsar/data/zookeeper
-    environment:
-      - metadataStoreUrl=zk:zookeeper:2181
-    command: >
-      bash -c "bin/apply-config-from-env.py conf/zookeeper.conf && \
-             bin/generate-zookeeper-config.sh conf/zookeeper.conf && \
-             exec bin/pulsar zookeeper"
-    healthcheck:
-      test: ["CMD", "bin/pulsar-zookeeper-ruok.sh"]
-      interval: 10s
-      timeout: 5s
-      retries: 30
 
-# Init cluster metadata
+services:
+
+  zk1:
+    container_name: zk1
+    hostname: zk1
+    image: apachepulsar/pulsar-all:latest
+    command: >
+      bash -c "python3 bin/apply-config-from-env.py conf/zookeeper.conf && \
+               python3 bin/apply-config-from-env.py conf/pulsar_env.sh && \
+               bin/generate-zookeeper-config.sh conf/zookeeper.conf && \
+               exec bin/pulsar zookeeper"
+    environment:
+      ZOOKEEPER_SERVERS: zk1
+    volumes:
+      - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
+    networks:
+      pulsar:
+
   pulsar-init:
     container_name: pulsar-init
     hostname: pulsar-init
-    image: apachepulsar/pulsar:latest
-    networks:
-      - pulsar
-    command: >
-      bin/pulsar initialize-cluster-metadata \
-               --cluster cluster-a \
-               --zookeeper zookeeper:2181 \
-               --configuration-store zookeeper:2181 \
-               --web-service-url http://broker:8080 \
-               --broker-service-url pulsar://broker:6650
-    depends_on:
-      zookeeper:
-        condition: service_healthy
-
-# Start bookie
-  bookie:
-    image: apachepulsar/pulsar:latest
-    container_name: bookie
-    restart: on-failure
-    networks:
-      - pulsar
+    image: apachepulsar/pulsar-all:latest
+    command: ./bin/init-cluster.sh
     environment:
-      - clusterName=cluster-a
-      - zkServers=zookeeper:2181
-      - metadataServiceUri=metadata-store:zk:zookeeper:2181
-    depends_on:
-      zookeeper:
-        condition: service_healthy
-      pulsar-init:
-        condition: service_completed_successfully
-  # Map the local directory to the container to avoid bookie startup failure due to insufficient container disks.
+      clusterName: cluster-a
+      zkServers: zk1:2181
+      configurationStore: zk1:2181
+      pulsarNode: proxy1
     volumes:
-      - ./data/bookkeeper:/pulsar/data/bookkeeper
-    command: bash -c "bin/apply-config-from-env.py conf/bookkeeper.conf
-      && exec bin/pulsar bookie"
-
-# Start broker
-  broker:
-    image: apachepulsar/pulsar:latest
-    container_name: broker
-    hostname: broker
-    restart: on-failure
-    networks:
-      - pulsar
-    environment:
-      - metadataStoreUrl=zk:zookeeper:2181
-      - zookeeperServers=zookeeper:2181
-      - clusterName=cluster-a
-      - managedLedgerDefaultEnsembleSize=1
-      - managedLedgerDefaultWriteQuorum=1
-      - managedLedgerDefaultAckQuorum=1
-      - advertisedAddress=broker
-      - advertisedListeners=external:pulsar://10.101.12.225:6650
+      - ./conf/scripts/init-cluster.sh/:/pulsar/bin/init-cluster.sh
     depends_on:
-      zookeeper:
-        condition: service_healthy
-      bookie:
-        condition: service_started
+      - zk1
+    networks:
+      pulsar:
+
+  bk1:
+    hostname: bk1
+    container_name: bk1
+    image: apachepulsar/pulsar-all:latest
+    command: >
+      bash -c "export dbStorage_writeCacheMaxSizeMb="$${dbStorage_writeCacheMaxSizeMb:-16}" && \
+               export dbStorage_readAheadCacheMaxSizeMb="$${dbStorage_readAheadCacheMaxSizeMb:-16}" && \
+               python3 bin/apply-config-from-env.py conf/bookkeeper.conf && \
+               python3 bin/apply-config-from-env.py conf/pulsar_env.sh && \
+               python3 bin/watch-znode.py -z $$zkServers -p /initialized-$$clusterName -w && \
+               exec bin/pulsar bookie"
+    environment:
+      clusterName: cluster-a
+      zkServers: zk1:2181
+      numAddWorkerThreads: 8
+      useHostNameAsBookieID: "true"
+    volumes:
+      - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
+      - ./conf/bookkeeper.conf:/pulsar/conf/bookkeeper.conf
+      - ./conf/broker.conf:/pulsar/conf/broker.conf
+    depends_on:
+      - zk1
+      - pulsar-init
+    networks:
+      pulsar:
+
+  broker1:
+    hostname: broker1
+    container_name: broker1
+    image: apachepulsar/pulsar-all:latest
+    restart: on-failure
+    command: >
+      bash -c "python3 bin/apply-config-from-env.py conf/broker.conf && \
+               python3 bin/apply-config-from-env.py conf/pulsar_env.sh && \
+               python3 bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
+               exec bin/pulsar broker"
+    environment:
+      clusterName: cluster-a
+      zookeeperServers: zk1:2181
+      configurationStore: zk1:2181
+      webSocketServiceEnabled: "false"
+      functionsWorkerEnabled: "false"
+    volumes:
+      - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
+      - ./conf/bookkeeper.conf:/pulsar/conf/bookkeeper.conf
+      - ./conf/broker.conf:/pulsar/conf/broker.conf
+    depends_on:
+      - zk1
+      - pulsar-init
+      - bk1
+    networks:
+      pulsar:
+
+  proxy1:
+    hostname: proxy1
+    container_name: proxy1
+    restart: on-failure
+    image: apachepulsar/pulsar-all:latest
+    command: >
+      bash -c "python3 bin/apply-config-from-env.py conf/proxy.conf && \
+               python3 bin/apply-config-from-env.py conf/pulsar_env.sh && \
+               python3 bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
+               exec bin/pulsar proxy"
+    environment:
+      clusterName: cluster-a
+      zookeeperServers: zk1:2181
+      configurationStoreServers: zk1:2181
+      webSocketServiceEnabled: "true"
+      functionWorkerWebServiceURL: http://fnc1:6750
+    volumes:
+      - ./conf/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py
     ports:
       - "6650:6650"
       - "8080:8080"
-    command: bash -c "bin/apply-config-from-env.py conf/broker.conf
-      &&  exec bin/pulsar broker"
+    depends_on:
+      - zk1
+      - pulsar-init
+      - bk1
+      - broker1
+    networks:
+      pulsar:
 ```
 ### 1.4 启动容器
 ```shell
@@ -131,14 +156,13 @@ sudo docker compose up -d
 ```
 ### 1.5 查看容器进程
 ```
-sudo docker ps -a
-edward@deptest225:~/pulsar$ sudo docker ps -a
-[sudo] password for edward:
-CONTAINER ID   IMAGE                        COMMAND                  CREATED             STATUS                         PORTS                                                                                  NAMES
-5cf68895b734   apachepulsar/pulsar:latest   "bash -c 'bin/apply-…"   About an hour ago   Up About a minute              0.0.0.0:6650->6650/tcp, :::6650->6650/tcp, 0.0.0.0:8080->8080/tcp, :::8080->8080/tcp   broker
-2cb0c695bc15   apachepulsar/pulsar:latest   "bash -c 'bin/apply-…"   About an hour ago   Up About a minute                                                                                                     bookie
-66fe9003ad8f   apachepulsar/pulsar:latest   "bin/pulsar initiali…"   About an hour ago   Exited (0) About an hour ago                                                                                          pulsar-init
-eb3047460dd6   apachepulsar/pulsar:latest   "bash -c 'bin/apply-…"   About an hour ago   Up About a minute (healthy)                                                                                           zookeeper
+edward@ubuntu:~/pulsar$ sudo docker ps -a
+CONTAINER ID   IMAGE                            COMMAND                  CREATED          STATUS                      PORTS                                                                                  NAMES
+799e446b88f4   apachepulsar/pulsar-all:latest   "bash -c 'python3 bi…"   15 minutes ago   Up 14 minutes               0.0.0.0:6650->6650/tcp, :::6650->6650/tcp, 0.0.0.0:8080->8080/tcp, :::8080->8080/tcp   proxy1
+d293a748519f   apachepulsar/pulsar-all:latest   "bash -c 'python3 bi…"   15 minutes ago   Up 15 minutes                                                                                                      broker1
+dbf4661a0b57   apachepulsar/pulsar-all:latest   "bash -c 'export dbS…"   15 minutes ago   Up 15 minutes                                                                                                      bk1
+e96dab0f64ee   apachepulsar/pulsar-all:latest   "./bin/init-cluster.…"   15 minutes ago   Exited (0) 14 minutes ago                                                                                          pulsar-init
+465afdea4f41   apachepulsar/pulsar-all:latest   "bash -c 'python3 bi…"   15 minutes ago   Up 15 minutes                                                                                                      zk1
 ```
 ### 1.6 进入Broker端容器, 生成JWT TOKEN需要用到的secret key
 ```
